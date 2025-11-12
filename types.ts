@@ -3,9 +3,8 @@ export interface Professional {
   id: string; // Document ID from Firestore
   staff_name: string;
   specialty: string; // This might be derived from services, keeping for UI
-  color: string; // UI specific
-  textColor: string; // UI specific
-  borderColor: string; // UI specific
+  color: string; // UI specific, e.g., 'bg-pink-400'
+  textColor: string; // UI specific, e.g., 'text-white'
   image?: string;
 }
 
@@ -30,3 +29,11 @@ export interface Appointment {
 }
 
 export type ViewType = 'day' | 'week' | 'month';
+
+// Used for rendering overlapping appointments
+export interface AppointmentWithLayout extends Appointment {
+  width: string; // e.g., '50%'
+  left: string; // e.g., '0%' or '50%'
+  top: string; // e.g., '120px'
+  height: string; // e.g., '60px'
+}

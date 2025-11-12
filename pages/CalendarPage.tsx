@@ -1,25 +1,22 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import Header from '../components/Header';
 import ResponsiveCalendar from '../components/Calendar';
-import AppointmentModal from '../components/AppointmentModal';
 import { Appointment, Professional, Client, ViewType } from '../types';
 
 interface CalendarPageProps {
   appointments: Appointment[];
   professionals: Professional[];
   clients: Client[];
-  onSaveAppointment: (appointmentData: Omit<Appointment, 'id'>, idToUpdate?: string) => void;
+  onAppointmentClick: (appointment: Appointment) => void;
+  onSlotClick: (date: Date, professionalId: string) => void;
+  onAddClick: () => void;
 }
 
-const CalendarPage: React.FC<CalendarPageProps> = ({ appointments, professionals, clients, onSaveAppointment }) => {
-  const [currentDate, setCurrentDate] = useState(new Date());
+const CalendarPage: React.FC<CalendarPageProps> = ({ appointments, professionals, clients, onAppointmentClick, onSlotClick, onAddClick }) => {
+  const [currentDate, setCurrentDate] = useState(new Date('2025-11-12T00:00:00'));
   const [currentTime, setCurrentTime] = useState(new Date());
   const [view, setView] = useState<ViewType>('day');
   
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
-  const [modalDefaults, setModalDefaults] = useState<{ date: Date, professionalId: string } | null>(null);
-
   useEffect(() => {
     const timerId = setInterval(() => {
       setCurrentTime(new Date());
@@ -71,29 +68,10 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ appointments, professionals
     setCurrentDate(newDate);
   }
 
-  const handleAppointmentClick = (appointment: Appointment) => {
-    setSelectedAppointment(appointment);
-    setIsModalOpen(true);
-  };
-
-  const handleSlotClick = (date: Date, professionalId: string) => {
-    setSelectedAppointment(null);
-    setModalDefaults({ date, professionalId });
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedAppointment(null);
-    setModalDefaults(null);
-  };
-  
-  const handleModalSave = (appointmentData: Omit<Appointment, 'id'>) => {
-    onSaveAppointment(appointmentData, selectedAppointment?.id);
-  };
-
   const isTodayInView = (() => {
     const today = new Date();
+    today.setHours(0,0,0,0);
+
     if (view === 'month') {
       return currentDate.getFullYear() === today.getFullYear() && currentDate.getMonth() === today.getMonth();
     }
@@ -109,11 +87,13 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ appointments, professionals
       return today >= startOfWeek && today <= endOfWeek;
     }
     // 'day' view
-    return currentDate.toDateString() === today.toDateString();
+    const currentDay = new Date(currentDate);
+    currentDay.setHours(0,0,0,0);
+    return currentDay.getTime() === today.getTime();
   })();
   
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
+    <div className="flex-1 flex flex-col overflow-hidden relative">
         <Header 
           currentDate={currentDate} 
           view={view}
@@ -129,21 +109,20 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ appointments, professionals
           appointments={appointments}
           professionals={professionals}
           clients={clients}
-          onAppointmentClick={handleAppointmentClick}
-          onSlotClick={handleSlotClick}
+          onAppointmentClick={onAppointmentClick}
+          onSlotClick={onSlotClick}
           view={view}
           onViewChange={handleDateAndVIewChange}
         />
-      <AppointmentModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onSave={handleModalSave}
-        professionals={professionals}
-        clients={clients}
-        appointment={selectedAppointment}
-        defaultDate={modalDefaults?.date}
-        defaultProfessionalId={modalDefaults?.professionalId}
-      />
+        <button 
+          onClick={onAddClick}
+          className="absolute bottom-6 right-6 bg-sky-600 text-white rounded-full p-4 shadow-lg hover:bg-sky-700 transition-colors z-30"
+          aria-label="Add new appointment"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { Appointment, Professional, Client, AppointmentStatus, ViewType } from '../types';
 import { TIME_SLOTS, DAYS_OF_WEEK } from '../constants';
+import { processAppointmentsForLayout } from './calendarUtils';
 
 interface CalendarProps {
   currentDate: Date;
@@ -13,32 +14,162 @@ interface CalendarProps {
   onViewChange: (view: ViewType, date: Date) => void;
 }
 
-const SLOT_ROW_HEIGHT_REM = 1.5; // 24px
+const SLOT_ROW_HEIGHT_REM = 1.25; // 20px
+const MINUTES_PER_REM = 60 / (SLOT_ROW_HEIGHT_REM * 4); // Minutes per 1 rem
 
 const getStatusStyles = (status: AppointmentStatus) => {
     switch (status) {
-        case 'Approved': return { dot: 'bg-green-500', text: 'text-green-800' };
-        case 'Completed': return { dot: 'bg-blue-500', text: 'text-blue-800' };
-        case 'Requested': return { dot: 'bg-yellow-500', text: 'text-yellow-800' };
-        case 'Cancelled': return { dot: 'bg-red-500', text: 'text-red-800', lineThrough: 'line-through' };
-        case 'Missing': return { dot: 'bg-gray-500', text: 'text-gray-800' };
-        case 'Rescheduled': return { dot: 'bg-purple-500', text: 'text-purple-800' };
-        default: return { dot: 'bg-gray-400', text: 'text-gray-700' };
+        case 'Approved': return { dot: 'bg-green-500' };
+        case 'Completed': return { dot: 'bg-blue-500' };
+        case 'Requested': return { dot: 'bg-yellow-500' };
+        case 'Cancelled': return { dot: 'bg-red-500', lineThrough: 'line-through' };
+        case 'Missing': return { dot: 'bg-gray-500' };
+        case 'Rescheduled': return { dot: 'bg-purple-500' };
+        default: return { dot: 'bg-gray-400' };
     }
+};
+
+const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: false
+    });
+};
+
+const formatTimeGutter = (time: string) => {
+    const [hourStr] = time.split(':');
+    const hour = parseInt(hourStr, 10);
+    if (hour === 0) return { main: '12', period: 'am'};
+    if (hour < 12) return { main: String(hour), period: 'am' };
+    if (hour === 12) return { main: '12', period: 'pm' };
+    return { main: String(hour - 12), period: 'pm' };
 };
 
 const TimeIndicator: React.FC<{ currentTime: Date }> = ({ currentTime }) => {
     const totalMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
-    const topPositionRem = (totalMinutes / 15) * SLOT_ROW_HEIGHT_REM;
+    const topPositionRem = totalMinutes / MINUTES_PER_REM;
 
     return (
-        <div style={{ top: `${topPositionRem}rem` }} className="absolute left-0 right-0 h-0.5 bg-red-500 z-30 flex items-center pointer-events-none">
+        <div style={{ top: `${topPositionRem}rem` }} className="absolute -left-2 right-0 h-px bg-red-500 z-30 flex items-center pointer-events-none">
             <div className="h-2 w-2 rounded-full bg-red-500 -ml-1"></div>
         </div>
     );
 };
 
 
+const CalendarDayView: React.FC<CalendarProps> = ({
+  currentDate,
+  currentTime,
+  appointments,
+  professionals,
+  clients,
+  onAppointmentClick,
+  onSlotClick
+}) => {
+  const clientsMap = new Map<string, Client>(clients.map(c => [c.id, c]));
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      const totalMinutes = 8 * 60; // Start of business day
+      const topPositionRem = totalMinutes / MINUTES_PER_REM;
+      const topPositionPx = topPositionRem * 16;
+      scrollRef.current.scrollTo({
+        top: topPositionPx - 50,
+        behavior: 'smooth',
+      });
+    }
+  }, [currentDate]);
+
+  const isToday = currentDate.toDateString() === new Date().toDateString();
+
+  const appointmentsForDay = appointments.filter(appt => new Date(appt.start).toDateString() === currentDate.toDateString());
+  const appointmentsByProfessional = professionals.map(prof => 
+    processAppointmentsForLayout(appointmentsForDay.filter(appt => appt.staff_id === prof.id))
+  );
+
+  return (
+    <div ref={scrollRef} className="flex-grow overflow-auto bg-white">
+      <div className="min-w-[800px] flex">
+        {/* Time Gutter */}
+        <div className="sticky top-0 left-0 bg-white z-20 w-16 text-right pr-2">
+           <div className="h-20 border-b border-slate-200"></div>
+           <div className="relative">
+                {Array.from({ length: 24 }).map((_, hour) => (
+                    <div key={hour} className="h-20 text-sm text-slate-400 relative border-t border-slate-100">
+                        <span className="absolute -top-2.5 right-2">
+                            <span className="font-semibold text-slate-500">{formatTimeGutter(`${hour}:00`).main}</span>
+                            <span className="text-xs ml-0.5">{formatTimeGutter(`${hour}:00`).period}</span>
+                        </span>
+                    </div>
+                ))}
+           </div>
+        </div>
+        
+        {/* Main Grid */}
+        <div className="flex-grow grid" style={{ gridTemplateColumns: `repeat(${professionals.length}, minmax(0, 1fr))` }}>
+            {/* Header Row */}
+            {professionals.map((prof) => (
+                <div key={prof.id} className="sticky top-0 bg-white z-20 p-2 text-center border-b border-l border-slate-200 flex flex-col items-center justify-center h-20">
+                    <img src={prof.image} alt={prof.staff_name} className="h-8 w-8 rounded-full object-cover mb-1" />
+                    <h3 className="font-medium text-sm text-slate-700">{prof.staff_name}</h3>
+                </div>
+            ))}
+            
+            {/* Content Columns */}
+            {professionals.map((prof, profIndex) => (
+                <div key={prof.id} className="relative border-l border-slate-200">
+                    {/* Background grid lines */}
+                    {Array.from({ length: 24 * 4 }).map((_, i) => (
+                        <div key={i} className={`h-5 border-t ${i % 4 === 0 ? 'border-slate-200' : 'border-slate-100'}`}></div>
+                    ))}
+                    
+                    {isToday && profIndex === 0 && <TimeIndicator currentTime={currentTime} />}
+
+                    {/* Appointments */}
+                    {appointmentsByProfessional[profIndex].map(appt => {
+                        const client = clientsMap.get(appt.client_id);
+                        if (!client) return null;
+                        
+                        const top = (appt.start.getHours() * 60 + appt.start.getMinutes()) / MINUTES_PER_REM;
+                        const end = (appt.end.getHours() * 60 + appt.end.getMinutes()) / MINUTES_PER_REM;
+                        const height = end - top;
+                        
+                        const width = 100 / appt.h_total;
+                        const left = appt.h_pos * width;
+
+                        return (
+                            <div
+                                key={appt.id}
+                                className={`absolute rounded p-2 cursor-pointer transition-all duration-200 ease-in-out text-xs flex flex-col overflow-hidden`}
+                                style={{
+                                    top: `${top}rem`,
+                                    height: `${height}rem`,
+                                    left: `calc(${left}% + 2px)`,
+                                    width: `calc(${width}% - 4px)`,
+                                    backgroundColor: prof.color,
+                                    color: prof.textColor,
+                                }}
+                                onClick={() => onAppointmentClick(appt)}
+                            >
+                                <p className="font-bold truncate">{appt.service_name}</p>
+                                <p className="truncate">{client.client_name}</p>
+                                <p className="mt-auto opacity-80">{`${formatTime(appt.start)} - ${formatTime(appt.end)}`}</p>
+                            </div>
+                        );
+                    })}
+                </div>
+            ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+// These views are not the focus of the redesign but are kept to avoid breaking the app.
+// Their styling has not been updated to the new design system.
 const CalendarWeekView: React.FC<CalendarProps> = ({
   currentDate,
   currentTime,
@@ -51,15 +182,16 @@ const CalendarWeekView: React.FC<CalendarProps> = ({
   const professionalsMap = new Map<string, Professional>(professionals.map(p => [p.id, p]));
   const clientsMap = new Map<string, Client>(clients.map(c => [c.id, c]));
   const scrollRef = useRef<HTMLDivElement>(null);
+  const oldSlotHeightRem = 1.5;
 
   useEffect(() => {
     const isTodayInView = getWeekDays(currentDate).some(d => d.toDateString() === new Date().toDateString());
     if (scrollRef.current && isTodayInView) {
-      const totalMinutes = new Date().getHours() * 60 + new Date().getMinutes();
-      const topPositionRem = (totalMinutes / 15) * SLOT_ROW_HEIGHT_REM;
-      const topPositionPx = topPositionRem * 16; // Assuming 1rem = 16px
+      const totalMinutes = 8 * 60; // Start of the business day
+      const topPositionRem = (totalMinutes / 15) * oldSlotHeightRem;
+      const topPositionPx = topPositionRem * 16;
       scrollRef.current.scrollTo({
-        top: topPositionPx - scrollRef.current.clientHeight / 2,
+        top: topPositionPx - 50,
         behavior: 'smooth',
       });
     }
@@ -79,7 +211,7 @@ const CalendarWeekView: React.FC<CalendarProps> = ({
 
   const getGridPosition = (date: Date) => {
     const totalMinutes = date.getHours() * 60 + date.getMinutes();
-    const row = Math.floor(totalMinutes / 15) + 1; // +1 for 1-based grid-row index
+    const row = Math.floor(totalMinutes / 15) + 1;
     return row;
   };
   
@@ -88,14 +220,11 @@ const CalendarWeekView: React.FC<CalendarProps> = ({
   );
 
   return (
-    <div ref={scrollRef} className="flex-grow p-4 md:p-6 overflow-auto bg-slate-100">
+    <div ref={scrollRef} className="flex-grow p-4 md:p-6 overflow-auto bg-slate-50">
       <div className="grid gap-px bg-slate-200 min-w-[1200px]" style={{
-        gridTemplateColumns: `60px repeat(7, 1fr)`,
+        gridTemplateColumns: `50px repeat(7, 1fr)`,
       }}>
-        {/* Time Gutter Header */}
         <div className="sticky top-0 left-0 bg-white z-30 border-b border-slate-200"></div>
-
-        {/* Day Headers */}
         {weekDays.map((day) => {
             const isToday = day.toDateString() === new Date().toDateString();
             return (
@@ -106,38 +235,31 @@ const CalendarWeekView: React.FC<CalendarProps> = ({
             )
         })}
         
-        {/* Time Gutter Column */}
-        <div className="sticky left-0 bg-white z-10 row-start-2 col-start-1 grid" style={{ gridTemplateRows: `repeat(${TIME_SLOTS.length}, ${SLOT_ROW_HEIGHT_REM}rem)`}}>
+        <div className="sticky left-0 bg-white z-10 row-start-2 col-start-1 grid" style={{ gridTemplateRows: `repeat(${TIME_SLOTS.length}, ${oldSlotHeightRem}rem)`}}>
             {TIME_SLOTS.map((time, index) => (
-                <div key={index} className="relative -top-2 flex items-start justify-center text-xs text-slate-500 h-full">
-                    {time.endsWith(':00') && time}
+                <div key={index} className="relative -top-3 flex items-start justify-end pr-2 text-xs text-slate-400 h-full">
+                    {time.endsWith(':00') && formatTime(new Date(2022, 0, 1, parseInt(time.split(':')[0], 10)))}
                 </div>
             ))}
         </div>
 
-        {/* Calendar Grid for each day */}
         {weekDays.map((day, dayIndex) => (
             <div key={day.toISOString()} className="relative row-start-2" style={{ gridColumn: `${dayIndex + 2} / span 1`}}>
                  <div className="absolute inset-0 grid grid-cols-subgrid" style={{ gridTemplateColumns: `repeat(${professionals.length}, 1fr)`}}>
                      {professionals.map((prof, profIndex) => (
-                         <div key={`${prof.id}-${day.toISOString()}`} className="bg-white grid" style={{ gridTemplateRows: `repeat(${TIME_SLOTS.length}, ${SLOT_ROW_HEIGHT_REM}rem)`}}>
+                         <div key={`${prof.id}-${day.toISOString()}`} className="bg-white grid" style={{ gridTemplateRows: `repeat(${TIME_SLOTS.length}, ${oldSlotHeightRem}rem)`}}>
                              {TIME_SLOTS.map((_, slotIndex) => {
                                  const slotDate = new Date(day);
                                  const [hour, minute] = TIME_SLOTS[slotIndex].split(':').map(Number);
                                  slotDate.setHours(hour, minute, 0, 0);
                                  return (
-                                     <div
-                                         key={slotIndex}
-                                         className={`hover:bg-sky-50 cursor-pointer h-full ${slotIndex % 4 === 0 ? 'border-t border-slate-200' : 'border-t border-slate-100'}`}
-                                         onClick={() => onSlotClick(slotDate, prof.id)}
-                                     ></div>
+                                     <div key={slotIndex} className={`hover:bg-sky-50 cursor-pointer h-full border-t border-slate-100`} onClick={() => onSlotClick(slotDate, prof.id)}></div>
                                  )
                              })}
                          </div>
                      ))}
                  </div>
-                 <div className="absolute inset-0 grid pointer-events-none" style={{ gridTemplateRows: `repeat(${TIME_SLOTS.length}, ${SLOT_ROW_HEIGHT_REM}rem)`, gridTemplateColumns: `repeat(${professionals.length}, 1fr)` }}>
-                    {day.toDateString() === new Date().toDateString() && <TimeIndicator currentTime={currentTime} />}
+                 <div className="absolute inset-0 grid pointer-events-none" style={{ gridTemplateRows: `repeat(${TIME_SLOTS.length}, ${oldSlotHeightRem}rem)`, gridTemplateColumns: `repeat(${professionals.length}, 1fr)` }}>
                     {appointmentsByDay[dayIndex].map(appt => {
                         const startRow = getGridPosition(appt.start);
                         const endRow = getGridPosition(appt.end);
@@ -145,30 +267,16 @@ const CalendarWeekView: React.FC<CalendarProps> = ({
                         const client = clientsMap.get(appt.client_id);
                         const profIndex = professionals.findIndex(p => p.id === appt.staff_id);
                         if (profIndex === -1 || !prof || !client) return null;
-                        
                         const statusStyle = getStatusStyles(appt.status);
-                        const duration = (appt.end.getTime() - appt.start.getTime()) / 60000;
-                        const timeFormat: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', hour12: false };
-
                         return (
                         <div
                             key={appt.id}
-                            className={`p-1 m-px rounded border cursor-pointer overflow-hidden transition-all duration-200 ease-in-out hover:ring-2 hover:ring-offset-1 hover:ring-sky-500 ${prof.color} ${prof.borderColor} opacity-90 pointer-events-auto flex flex-col text-[10px]`}
-                            style={{
-                            gridColumn: `${profIndex + 1} / span 1`,
-                            gridRow: `${startRow} / ${endRow}`,
-                            }}
+                            className={`p-2 m-px rounded cursor-pointer overflow-hidden transition-all duration-200 ease-in-out hover:ring-2 hover:ring-sky-500 ${prof.color} ${prof.textColor} opacity-95 pointer-events-auto flex flex-col text-xs`}
+                            style={{ gridColumn: `${profIndex + 1} / span 1`, gridRow: `${startRow} / ${endRow}` }}
                             onClick={() => onAppointmentClick(appt)}
                         >
-                           <p className={`font-bold truncate ${statusStyle.text} ${statusStyle.lineThrough}`}>{appt.service_name}</p>
-                           <p className={`truncate opacity-80 ${statusStyle.text} ${statusStyle.lineThrough}`}>{client.client_name}</p>
-                           <div className="mt-auto opacity-70">
-                                <p>{`${appt.start.toLocaleTimeString([], timeFormat)} - ${appt.end.toLocaleTimeString([], timeFormat)} (${duration} min)`}</p>
-                                <div className="flex items-center gap-1.5">
-                                    <span className={`h-2 w-2 rounded-full ${statusStyle.dot}`}></span>
-                                    <span>{appt.status}</span>
-                                </div>
-                           </div>
+                           <p className={`font-semibold truncate ${statusStyle.lineThrough}`}>{appt.service_name}</p>
+                           <p className={`truncate opacity-80 ${statusStyle.lineThrough}`}>{client.client_name}</p>
                         </div>
                         );
                     })}
@@ -179,128 +287,6 @@ const CalendarWeekView: React.FC<CalendarProps> = ({
     </div>
   );
 };
-
-
-const CalendarDayView: React.FC<CalendarProps> = ({
-  currentDate,
-  currentTime,
-  appointments,
-  professionals,
-  clients,
-  onAppointmentClick,
-  onSlotClick
-}) => {
-  const professionalsMap = new Map<string, Professional>(professionals.map(p => [p.id, p]));
-  const clientsMap = new Map<string, Client>(clients.map(c => [c.id, c]));
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      const totalMinutes = new Date().getHours() * 60 + new Date().getMinutes();
-      const topPositionRem = (totalMinutes / 15) * SLOT_ROW_HEIGHT_REM;
-      const topPositionPx = topPositionRem * 16; // Assuming 1rem = 16px
-      scrollRef.current.scrollTo({
-        top: topPositionPx - scrollRef.current.clientHeight / 2,
-        behavior: 'smooth',
-      });
-    }
-  }, [currentDate]);
-
-
-  const getGridPosition = (date: Date) => {
-    const totalMinutes = date.getHours() * 60 + date.getMinutes();
-    const row = Math.floor(totalMinutes / 15) + 1; // +1 for 1-based grid-row index
-    return row;
-  };
-
-  const isToday = currentDate.toDateString() === new Date().toDateString();
-
-  return (
-    <div ref={scrollRef} className="flex-grow p-4 md:p-6 overflow-auto bg-slate-100">
-        <div className="grid gap-px bg-slate-200 min-w-[800px]" style={{
-            gridTemplateColumns: `60px repeat(${professionals.length}, 1fr)`,
-            gridTemplateRows: `auto repeat(${TIME_SLOTS.length}, ${SLOT_ROW_HEIGHT_REM}rem)`,
-        }}>
-            {/* Header Row */}
-            <div className="sticky top-0 left-0 bg-white z-30 p-2 text-center border-b border-slate-200 flex flex-col justify-center items-center">
-                <span className={`text-xs font-medium uppercase text-slate-500`}>{DAYS_OF_WEEK[currentDate.getDay()]}</span>
-                <p className={`text-2xl font-bold mt-1 ${isToday ? 'bg-sky-600 text-white rounded-full h-8 w-8 flex items-center justify-center' : 'text-slate-800'}`}>{currentDate.getDate()}</p>
-             </div>
-            {professionals.map((prof) => (
-                <div key={prof.id} className="sticky top-0 bg-white z-20 p-2 text-center border-b border-slate-200 flex items-center justify-center gap-2">
-                    {prof.image && <img src={prof.image} alt={prof.staff_name} className="h-8 w-8 rounded-full object-cover" />}
-                    <h3 className="font-semibold text-slate-700">{prof.staff_name}</h3>
-                </div>
-            ))}
-
-            {/* Time Gutter */}
-            <div className="sticky left-0 bg-white z-10 row-start-2 row-end-[-1] grid" style={{ gridTemplateRows: `repeat(${TIME_SLOTS.length}, ${SLOT_ROW_HEIGHT_REM}rem)`}}>
-                {TIME_SLOTS.map((time, index) => (
-                    <div key={index} className="relative -top-2 flex items-start justify-center text-xs text-slate-500 h-full">
-                        {time.endsWith(':00') && time}
-                    </div>
-                ))}
-            </div>
-
-            {/* Main content grid */}
-            <div className="relative col-start-2 col-end-[-1] row-start-2 row-end-[-1] grid grid-cols-subgrid">
-                 {professionals.map((prof) => (
-                    <div key={prof.id} className="bg-white grid grid-rows-subgrid row-start-1 row-end-[-1]">
-                       {TIME_SLOTS.map((_, slotIndex) => {
-                          const slotDate = new Date(currentDate);
-                          const [hour, minute] = TIME_SLOTS[slotIndex].split(':').map(Number);
-                          slotDate.setHours(hour, minute, 0, 0);
-                          return (
-                            <div key={slotIndex} className={`hover:bg-sky-50 cursor-pointer h-full ${slotIndex % 4 === 0 ? 'border-t border-slate-200' : 'border-t border-slate-100'}`}
-                                 onClick={() => onSlotClick(slotDate, prof.id)}></div>
-                          )
-                       })}
-                    </div>
-                 ))}
-                 <div className="absolute inset-0 grid grid-rows-subgrid row-start-1 row-end-[-1] grid-cols-subgrid col-start-1 col-end-[-1] pointer-events-none">
-                 {isToday && <TimeIndicator currentTime={currentTime} />}
-                 {appointments
-                    .filter(appt => new Date(appt.start).toDateString() === currentDate.toDateString())
-                    .map(appt => {
-                        const startRow = getGridPosition(appt.start);
-                        const endRow = getGridPosition(appt.end);
-                        const prof = professionalsMap.get(appt.staff_id);
-                        const client = clientsMap.get(appt.client_id);
-                        const profIndex = professionals.findIndex(p => p.id === appt.staff_id);
-                        if (profIndex === -1 || !prof || !client) return null;
-
-                        const statusStyle = getStatusStyles(appt.status);
-                        const duration = (appt.end.getTime() - appt.start.getTime()) / 60000;
-                        const timeFormat: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', hour12: false };
-
-                        return (
-                            <div
-                                key={appt.id}
-                                className={`m-px p-1 rounded border cursor-pointer overflow-hidden transition-all duration-200 ease-in-out hover:ring-2 hover:ring-offset-1 hover:ring-sky-500 ${prof.color} ${prof.borderColor} opacity-90 pointer-events-auto flex flex-col text-[10px]`}
-                                style={{
-                                gridColumn: `${profIndex + 1} / span 1`,
-                                gridRow: `${startRow} / ${endRow}`,
-                                }}
-                                onClick={() => onAppointmentClick(appt)}
-                            >
-                                <p className={`font-bold truncate ${statusStyle.text} ${statusStyle.lineThrough}`}>{appt.service_name}</p>
-                                <p className={`truncate opacity-80 ${statusStyle.text} ${statusStyle.lineThrough}`}>{client.client_name}</p>
-                                <div className="mt-auto opacity-70">
-                                    <p>{`${appt.start.toLocaleTimeString([], timeFormat)} - ${appt.end.toLocaleTimeString([], timeFormat)} (${duration} min)`}</p>
-                                    <div className="flex items-center gap-1.5">
-                                        <span className={`h-2 w-2 rounded-full ${statusStyle.dot}`}></span>
-                                        <span>{appt.status}</span>
-                                    </div>
-                               </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-        </div>
-    </div>
-  );
-}
 
 const getMonthViewDays = (dateInMonth: Date) => {
   const date = new Date(dateInMonth);
@@ -347,7 +333,7 @@ const CalendarMonthView: React.FC<CalendarProps> = ({
   }, {} as Record<string, Appointment[]>);
 
   return (
-    <div className="flex-grow p-4 md:p-6 overflow-auto bg-slate-100">
+    <div className="flex-grow p-4 md:p-6 overflow-auto bg-slate-50">
       <div className="grid grid-cols-7 gap-px bg-slate-200 border border-slate-200">
         {DAYS_OF_WEEK.map(day => (
           <div key={day} className="bg-white p-2 text-center text-sm font-semibold text-slate-600">
@@ -362,7 +348,7 @@ const CalendarMonthView: React.FC<CalendarProps> = ({
           return (
             <div
               key={dayKey}
-              className={`bg-white min-h-[120px] p-1 flex flex-col cursor-pointer hover:bg-slate-50 transition-colors ${isCurrentMonth ? '' : 'bg-slate-50'}`}
+              className={`bg-white min-h-[120px] p-1 flex flex-col cursor-pointer hover:bg-slate-50 transition-colors ${isCurrentMonth ? '' : 'bg-slate-100'}`}
               onClick={() => onViewChange('day', day)}
             >
               <div className="flex justify-end mb-1">
@@ -377,11 +363,12 @@ const CalendarMonthView: React.FC<CalendarProps> = ({
                   return (
                     <div
                       key={appt.id}
-                      className={`p-1 rounded text-xs border ${prof.color} ${prof.borderColor} opacity-90 flex items-center gap-1`}
+                      className={`p-1 rounded text-xs border-l-2 bg-opacity-20 flex items-center gap-1`}
+                      style={{ borderColor: prof.color.replace('bg-', 'border-'), backgroundColor: prof.color.replace('400', '100') }}
                       onClick={(e) => { e.stopPropagation(); onAppointmentClick(appt); }}
                     >
-                      <span className={`h-1.5 w-1.5 rounded-full ${getStatusStyles(appt.status).dot}`}></span>
-                      <p className="font-semibold truncate">{appt.service_name}</p>
+                      <p className={`font-semibold truncate`}>{formatTime(appt.start)}</p>
+                       <p className={`truncate`}>{appt.service_name}</p>
                     </div>
                   );
                 })}

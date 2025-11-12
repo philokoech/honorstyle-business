@@ -33,6 +33,13 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
   const [duration, setDuration] = useState(60); // Duration in minutes
   const [status, setStatus] = useState<AppointmentStatus>('Requested');
   
+  const formatToYMD = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   useEffect(() => {
     if (appointment) {
       setTitle(appointment.service_name);
@@ -41,8 +48,11 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
       setStatus(appointment.status);
 
       const startDate = new Date(appointment.start);
-      setDate(startDate.toISOString().split('T')[0]);
-      setStartTime(startDate.toTimeString().substring(0, 5));
+      setDate(formatToYMD(startDate));
+      
+      const hours = String(startDate.getHours()).padStart(2, '0');
+      const minutes = String(startDate.getMinutes()).padStart(2, '0');
+      setStartTime(`${hours}:${minutes}`);
 
       const diff = appointment.end.getTime() - appointment.start.getTime();
       setDuration(Math.round(diff / (1000 * 60)));
@@ -52,11 +62,15 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
       setTitle('');
       setProfessionalId(defaultProfessionalId || (professionals.length > 0 ? professionals[0].id : ''));
       setClientId(clients.length > 0 ? clients[0].id : '');
-      setDate(initialDate.toISOString().split('T')[0]);
+      setDate(formatToYMD(initialDate));
+      
       const roundedMinutes = Math.floor(initialDate.getMinutes() / 15) * 15;
       const roundedStartTime = new Date(initialDate);
-      roundedStartTime.setMinutes(roundedMinutes);
-      setStartTime(roundedStartTime.toTimeString().substring(0,5));
+      roundedStartTime.setMinutes(roundedMinutes, 0, 0);
+      const hours = String(roundedStartTime.getHours()).padStart(2, '0');
+      const minutes = String(roundedStartTime.getMinutes()).padStart(2, '0');
+      setStartTime(`${hours}:${minutes}`);
+
       setDuration(60);
       setStatus('Requested');
     }
@@ -66,14 +80,14 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const [startHour, startMinute] = startTime.split(':').map(Number);
     
-    // Create a date object in the local timezone
-    const localDate = new Date(`${date}T00:00:00`);
-
-    const startDate = new Date(localDate);
-    startDate.setHours(startHour, startMinute, 0, 0);
+    // This is a more robust way to create a Date object from local time components,
+    // avoiding browser inconsistencies with string parsing.
+    const [year, month, day] = date.split('-').map(Number);
+    const [hours, minutes] = startTime.split(':').map(Number);
     
+    // The month in the Date constructor is 0-indexed (0-11), so we subtract 1.
+    const startDate = new Date(year, month - 1, day, hours, minutes);
     const endDate = new Date(startDate.getTime() + duration * 60000);
 
     onSave({
