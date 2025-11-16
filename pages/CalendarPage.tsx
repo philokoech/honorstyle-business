@@ -14,28 +14,16 @@ interface CalendarPageProps {
 
 const CalendarPage: React.FC<CalendarPageProps> = ({ appointments, professionals, clients, onAppointmentClick, onSlotClick, onAddClick }) => {
   const [currentDate, setCurrentDate] = useState(new Date('2025-11-12T00:00:00'));
-  const [currentTime, setCurrentTime] = useState(new Date());
   const [view, setView] = useState<ViewType>('day');
+  const [selectedProfessional, setSelectedProfessional] = useState<string | null>(null);
   
-  useEffect(() => {
-    const timerId = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 60000); // Update every minute
-
-    return () => {
-      clearInterval(timerId);
-    };
-  }, []);
-
   const handlePrev = useCallback(() => {
     setCurrentDate(prevDate => {
       const newDate = new Date(prevDate);
-      if (view === 'day') {
+      if (view === 'day' || view === 'list') {
         newDate.setDate(prevDate.getDate() - 1);
       } else if (view === 'week') {
         newDate.setDate(prevDate.getDate() - 7);
-      } else if (view === 'month') {
-        newDate.setMonth(prevDate.getMonth() - 1);
       }
       return newDate;
     });
@@ -44,20 +32,14 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ appointments, professionals
   const handleNext = useCallback(() => {
     setCurrentDate(prevDate => {
       const newDate = new Date(prevDate);
-      if (view === 'day') {
+      if (view === 'day' || view === 'list') {
         newDate.setDate(prevDate.getDate() + 1);
       } else if (view === 'week') {
         newDate.setDate(prevDate.getDate() + 7);
-      } else if (view === 'month') {
-        newDate.setMonth(prevDate.getMonth() + 1);
       }
       return newDate;
     });
   }, [view]);
-
-  const handleToday = useCallback(() => {
-    setCurrentDate(new Date());
-  }, []);
 
   const handleViewChange = (newView: ViewType) => {
     setView(newView);
@@ -68,29 +50,9 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ appointments, professionals
     setCurrentDate(newDate);
   }
 
-  const isTodayInView = (() => {
-    const today = new Date();
-    today.setHours(0,0,0,0);
-
-    if (view === 'month') {
-      return currentDate.getFullYear() === today.getFullYear() && currentDate.getMonth() === today.getMonth();
-    }
-    if (view === 'week') {
-      const startOfWeek = new Date(currentDate);
-      startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
-      startOfWeek.setHours(0, 0, 0, 0);
-
-      const endOfWeek = new Date(startOfWeek);
-      endOfWeek.setDate(startOfWeek.getDate() + 6);
-      endOfWeek.setHours(23, 59, 59, 999);
-      
-      return today >= startOfWeek && today <= endOfWeek;
-    }
-    // 'day' view
-    const currentDay = new Date(currentDate);
-    currentDay.setHours(0,0,0,0);
-    return currentDay.getTime() === today.getTime();
-  })();
+  const handleSelectedProfessionalChange = (id: string | null) => {
+    setSelectedProfessional(id);
+  }
   
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
@@ -99,13 +61,10 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ appointments, professionals
           view={view}
           onViewChange={handleViewChange}
           onPrev={handlePrev} 
-          onNext={handleNext} 
-          onToday={handleToday}
-          isTodayInView={isTodayInView}
+          onNext={handleNext}
         />
         <ResponsiveCalendar
           currentDate={currentDate}
-          currentTime={currentTime}
           appointments={appointments}
           professionals={professionals}
           clients={clients}
@@ -113,15 +72,15 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ appointments, professionals
           onSlotClick={onSlotClick}
           view={view}
           onViewChange={handleDateAndVIewChange}
+          selectedProfessional={selectedProfessional}
+          onSelectedProfessionalChange={handleSelectedProfessionalChange}
         />
         <button 
           onClick={onAddClick}
-          className="absolute bottom-6 right-6 bg-sky-600 text-white rounded-full p-4 shadow-lg hover:bg-sky-700 transition-colors z-30"
+          className="absolute bottom-6 right-6 bg-[#b30549] text-white rounded-full p-4 shadow-lg hover:bg-[#a10442] transition-colors z-30"
           aria-label="Add new appointment"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
         </button>
     </div>
   );

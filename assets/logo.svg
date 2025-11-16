@@ -1,0 +1,16 @@
+<svg viewBox="0 0 130 32" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#c4376e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#b30549;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Icon -->
+  <rect x="2" y="2" width="28" height="28" rx="6" fill="url(#grad1)"/>
+  <path d="M12 18L15 21L21 15" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Text -->
+  <text x="40" y="23" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'" font-size="20" font-weight="600" fill="#1e293b">
+    ProCal
+  </text>
+</svg>

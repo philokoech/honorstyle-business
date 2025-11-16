@@ -36,7 +36,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         <div className="flex justify-between items-center mb-2">
             <h3 className="font-semibold text-slate-700">Professionals</h3>
             <div className="text-xs">
-                <button onClick={onSelectAllProfessionals} className="text-sky-600 hover:underline">All</button> | <button onClick={onClearProfessionals} className="text-sky-600 hover:underline">None</button>
+                <button onClick={onSelectAllProfessionals} className="text-[#b30549] hover:underline">All</button> | <button onClick={onClearProfessionals} className="text-[#b30549] hover:underline">None</button>
             </div>
         </div>
         <div className="space-y-2">
@@ -46,7 +46,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 type="checkbox"
                 checked={selectedProfessionals.includes(p.id)}
                 onChange={() => onToggleProfessional(p.id)}
-                className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                className="h-4 w-4 rounded border-slate-300 text-[#b30549] focus:ring-[#b30549]"
               />
               <span className="text-sm text-slate-600">{p.staff_name}</span>
             </label>
@@ -59,7 +59,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         <div className="flex justify-between items-center mb-2">
             <h3 className="font-semibold text-slate-700">Clients</h3>
             <div className="text-xs">
-                <button onClick={onSelectAllClients} className="text-sky-600 hover:underline">All</button> | <button onClick={onClearClients} className="text-sky-600 hover:underline">None</button>
+                <button onClick={onSelectAllClients} className="text-[#b30549] hover:underline">All</button> | <button onClick={onClearClients} className="text-[#b30549] hover:underline">None</button>
             </div>
         </div>
         <div className="space-y-2">
@@ -69,7 +69,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 type="checkbox"
                 checked={selectedClients.includes(c.id)}
                 onChange={() => onToggleClient(c.id)}
-                className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                className="h-4 w-4 rounded border-slate-300 text-[#b30549] focus:ring-[#b30549]"
               />
               <span className="text-sm text-slate-600">{c.client_name}</span>
             </label>

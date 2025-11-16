@@ -28,7 +28,7 @@ export interface Appointment {
   status: AppointmentStatus;
 }
 
-export type ViewType = 'day' | 'week' | 'month';
+export type ViewType = 'day' | 'week' | 'list';
 
 // Used for rendering overlapping appointments
 export interface AppointmentWithLayout extends Appointment {

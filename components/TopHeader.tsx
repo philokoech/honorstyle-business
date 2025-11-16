@@ -1,11 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const BrandLogo = () => (
-  <svg className="h-8 w-auto text-sky-600" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
-  </svg>
-);
-
 interface TopHeaderProps {
     currentPage: string;
     onAddClick: () => void;
@@ -16,7 +10,7 @@ const TopHeader: React.FC<TopHeaderProps> = ({ currentPage, onAddClick }) => {
   const profileRef = useRef<HTMLDivElement>(null);
   
   const navLinkClasses = "px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer";
-  const activeClasses = "bg-sky-100 text-sky-700";
+  const activeClasses = "bg-[#fceef4] text-[#b30549]";
   const inactiveClasses = "text-slate-600 hover:bg-slate-100 hover:text-slate-900";
 
   useEffect(() => {
@@ -49,10 +43,9 @@ const TopHeader: React.FC<TopHeaderProps> = ({ currentPage, onAddClick }) => {
         <div className="flex items-center justify-between h-16">
           {/* Left Section: Brand and Navigation */}
           <div className="flex items-center">
-            <div className="flex items-center">
-                <BrandLogo />
-                <span className="ml-3 font-bold text-xl text-slate-800">ProCal</span>
-            </div>
+            <a href="#/" onClick={(e) => handleNavClick(e, '#/')} className="flex items-center">
+              <img src="/assets/logo.svg" alt="ProCal logo" className="h-8 w-auto" />
+            </a>
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-4">
                 <a href="#/" onClick={(e) => handleNavClick(e, '#/')} className={getLinkClass('#/')} aria-current={currentPage === '#/' ? "page" : undefined}>Home/Dashboard</a>
@@ -67,7 +60,7 @@ const TopHeader: React.FC<TopHeaderProps> = ({ currentPage, onAddClick }) => {
           <div className="flex items-center gap-4">
              <button
                 onClick={onAddClick}
-                className="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-sky-600 text-white text-sm font-medium rounded-md hover:bg-sky-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
+                className="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-[#b30549] text-white text-sm font-medium rounded-md hover:bg-[#a10442] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#b30549]"
                 >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
@@ -76,7 +69,7 @@ const TopHeader: React.FC<TopHeaderProps> = ({ currentPage, onAddClick }) => {
             </button>
             <button
                 onClick={onAddClick}
-                className="sm:hidden p-2 bg-sky-600 text-white rounded-full hover:bg-sky-700"
+                className="sm:hidden p-2 bg-[#b30549] text-white rounded-full hover:bg-[#a10442]"
                 aria-label="Add"
             >
                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

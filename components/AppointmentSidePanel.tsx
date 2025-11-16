@@ -126,44 +126,44 @@ const AppointmentSidePanel: React.FC<AppointmentSidePanelProps> = ({
             <div className="flex-1 p-6 overflow-y-auto space-y-4">
                  <div>
                     <label className="block text-sm font-medium text-slate-600 mb-1">Service Title</label>
-                    <input type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full p-2 border border-slate-300 rounded-md bg-slate-50 focus:ring-sky-500 focus:border-sky-500" required />
+                    <input type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full p-2 border border-slate-300 rounded-md bg-slate-50 focus:ring-[#b30549] focus:border-[#b30549]" required />
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-slate-600 mb-1">Professional</label>
-                    <select value={professionalId} onChange={e => setProfessionalId(e.target.value)} className="w-full p-2 border border-slate-300 rounded-md bg-slate-50 focus:ring-sky-500 focus:border-sky-500">
+                    <select value={professionalId} onChange={e => setProfessionalId(e.target.value)} className="w-full p-2 border border-slate-300 rounded-md bg-slate-50 focus:ring-[#b30549] focus:border-[#b30549]">
                         {professionals.map(p => <option key={p.id} value={p.id}>{p.staff_name}</option>)}
                     </select>
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-slate-600 mb-1">Client</label>
-                    <select value={clientId} onChange={e => setClientId(e.target.value)} className="w-full p-2 border border-slate-300 rounded-md bg-slate-50 focus:ring-sky-500 focus:border-sky-500">
+                    <select value={clientId} onChange={e => setClientId(e.target.value)} className="w-full p-2 border border-slate-300 rounded-md bg-slate-50 focus:ring-[#b30549] focus:border-[#b30549]">
                         {clients.map(c => <option key={c.id} value={c.id}>{c.client_name}</option>)}
                     </select>
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-slate-600 mb-1">Status</label>
-                    <select value={status} onChange={e => setStatus(e.target.value as AppointmentStatus)} className="w-full p-2 border border-slate-300 rounded-md bg-slate-50 focus:ring-sky-500 focus:border-sky-500">
+                    <select value={status} onChange={e => setStatus(e.target.value as AppointmentStatus)} className="w-full p-2 border border-slate-300 rounded-md bg-slate-50 focus:ring-[#b30549] focus:border-[#b30549]">
                         {APPOINTMENT_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-slate-600 mb-1">Date</label>
-                    <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full p-2 border border-slate-300 rounded-md bg-slate-50 focus:ring-sky-500 focus:border-sky-500" required />
+                    <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full p-2 border border-slate-300 rounded-md bg-slate-50 focus:ring-[#b30549] focus:border-[#b30549]" required />
                 </div>
                 <div className="flex gap-4">
                     <div className="w-1/2">
                         <label className="block text-sm font-medium text-slate-600 mb-1">Start Time</label>
-                        <input type="time" value={startTime} step="900" onChange={e => setStartTime(e.target.value)} className="w-full p-2 border border-slate-300 rounded-md bg-slate-50 focus:ring-sky-500 focus:border-sky-500" required />
+                        <input type="time" value={startTime} step="900" onChange={e => setStartTime(e.target.value)} className="w-full p-2 border border-slate-300 rounded-md bg-slate-50 focus:ring-[#b30549] focus:border-[#b30549]" required />
                     </div>
                     <div className="w-1/2">
                         <label className="block text-sm font-medium text-slate-600 mb-1">Duration (min)</label>
-                        <input type="number" value={duration} step="15" min="15" onChange={e => setDuration(parseInt(e.target.value, 10))} className="w-full p-2 border border-slate-300 rounded-md bg-slate-50 focus:ring-sky-500 focus:border-sky-500" required />
+                        <input type="number" value={duration} step="15" min="15" onChange={e => setDuration(parseInt(e.target.value, 10))} className="w-full p-2 border border-slate-300 rounded-md bg-slate-50 focus:ring-[#b30549] focus:border-[#b30549]" required />
                     </div>
                 </div>
             </div>
             <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
                 <button type="button" onClick={handleClose} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300 transition-colors">Cancel</button>
-                <button type="submit" className="px-4 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors">Save</button>
+                <button type="submit" className="px-4 py-2 bg-[#b30549] text-white rounded-md hover:bg-[#a10442] transition-colors">Save</button>
             </div>
         </form>
       </div>

@@ -148,7 +148,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
           </div>
           <div className="mt-8 flex justify-end gap-3">
             <button type="button" onClick={onClose} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300 transition-colors">Cancel</button>
-            <button type="submit" className="px-4 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors">Save</button>
+            <button type="submit" className="px-4 py-2 bg-[#b30549] text-white rounded-md hover:bg-[#a10442] transition-colors">Save</button>
           </div>
         </form>
       </div>

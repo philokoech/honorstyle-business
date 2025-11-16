@@ -7,6 +7,8 @@ export const PROFESSIONALS: Professional[] = [
   { id: 'prof_3', staff_name: 'Harold Long', specialty: 'Nail Technician', color: 'bg-violet-400', textColor: 'text-white', image: 'https://i.pravatar.cc/150?u=prof_3' },
   { id: 'prof_4', staff_name: 'Isaiah Lopez', specialty: 'Hair Stylist', color: 'bg-sky-400', textColor: 'text-white', image: 'https://i.pravatar.cc/150?u=prof_4' },
   { id: 'prof_5', staff_name: 'Sarah Stephens', specialty: 'Esthetician', color: 'bg-amber-400', textColor: 'text-white', image: 'https://i.pravatar.cc/150?u=prof_5' },
+  { id: 'prof_6', staff_name: 'Samuel Price', specialty: 'Masseuse', color: 'bg-gray-400', textColor: 'text-white', image: 'https://i.pravatar.cc/150?u=prof_6' },
+  { id: 'prof_7', staff_name: 'Patricia Wright', specialty: 'Nail Technician', color: 'bg-slate-500', textColor: 'text-white', image: 'https://i.pravatar.cc/150?u=prof_7' },
 ];
 
 
@@ -24,41 +26,45 @@ export const CLIENTS: Client[] = [
   { id: 'client_11', client_name: 'Shawn Duncan' },
 ];
 
-const getAppointmentOn = (hour: number, minute: number = 0): Date => {
+const getAppointmentOn = (day: number, hour: number, minute: number = 0): Date => {
     // new Date(year, monthIndex, day, hours, minutes) is the most reliable
     // way to create a local date. November is month 10.
-    return new Date(2025, 10, 12, hour, minute);
+    return new Date(2025, 10, day, hour, minute);
 };
 
 
-// New dense schedule with overlaps to showcase the new layout
+// New dense schedule with overlaps to showcase the new layout, spread across a week
 export const INITIAL_APPOINTMENTS: Appointment[] = [
-  // Carrie Hawkins
-  { id: 'appt_1', staff_id: 'prof_1', client_id: 'client_5', service_name: 'Hair Cut', start: getAppointmentOn(11, 0), end: getAppointmentOn(12, 0), status: 'Approved', },
-  { id: 'appt_2', staff_id: 'prof_1', client_id: 'client_10', service_name: 'Hair Colouring', start: getAppointmentOn(12, 30), end: getAppointmentOn(14, 0), status: 'Approved', },
+  // Wednesday, Nov 12 (original data, slightly adjusted)
+  { id: 'appt_1', staff_id: 'prof_1', client_id: 'client_5', service_name: 'Hair Cut', start: getAppointmentOn(12, 11, 0), end: getAppointmentOn(12, 12, 0), status: 'Approved', },
+  { id: 'appt_2', staff_id: 'prof_1', client_id: 'client_10', service_name: 'Hair Colouring', start: getAppointmentOn(12, 12, 30), end: getAppointmentOn(12, 14, 0), status: 'Approved', },
+  { id: 'appt_3', staff_id: 'prof_2', client_id: 'client_3', service_name: 'Traditional Balinese Massage', start: getAppointmentOn(12, 10, 0), end: getAppointmentOn(12, 11, 0), status: 'Completed', },
+  { id: 'appt_4', staff_id: 'prof_2', client_id: 'client_11', service_name: 'Eyebrow Waxing', start: getAppointmentOn(12, 12, 0), end: getAppointmentOn(12, 13, 0), status: 'Approved', },
+  { id: 'appt_5', staff_id: 'prof_2', client_id: 'client_3', service_name: 'Traditional Balinese Massage', start: getAppointmentOn(12, 14, 0), end: getAppointmentOn(12, 15, 0), status: 'Requested', },
+  { id: 'appt_6', staff_id: 'prof_3', client_id: 'client_6', service_name: 'Refining Facial', start: getAppointmentOn(12, 10, 0), end: getAppointmentOn(12, 10, 30), status: 'Approved', },
+  { id: 'appt_7', staff_id: 'prof_3', client_id: 'client_7', service_name: 'Manicure', start: getAppointmentOn(12, 10, 30), end: getAppointmentOn(12, 11, 0), status: 'Approved', },
+  { id: 'appt_8', staff_id: 'prof_3', client_id: 'client_9', service_name: 'Refining Facial', start: getAppointmentOn(12, 12, 0), end: getAppointmentOn(12, 13, 0), status: 'Approved', },
+  { id: 'appt_9', staff_id: 'prof_3', client_id: 'client_8', service_name: 'Pedicure', start: getAppointmentOn(12, 11, 30), end: getAppointmentOn(12, 12, 30), status: 'Approved', }, // Overlap
+  { id: 'appt_10', staff_id: 'prof_4', client_id: 'client_5', service_name: 'Hair Cut', start: getAppointmentOn(12, 10, 0), end: getAppointmentOn(12, 11, 0), status: 'Approved', },
+  { id: 'appt_11', staff_id: 'prof_4', client_id: 'client_4', service_name: 'Hot Stone Massage', start: getAppointmentOn(12, 11, 30), end: getAppointmentOn(12, 13, 30), status: 'Approved', },
+  { id: 'appt_12', staff_id: 'prof_5', client_id: 'client_3', service_name: 'Traditional Balinese Massage', start: getAppointmentOn(12, 9, 0), end: getAppointmentOn(12, 10, 0), status: 'Approved', },
+  { id: 'appt_13', staff_id: 'prof_5', client_id: 'client_6', service_name: 'Eyebrow Waxing', start: getAppointmentOn(12, 9, 0), end: getAppointmentOn(12, 9, 30), status: 'Approved', }, // Overlap
+  { id: 'appt_14', staff_id: 'prof_5', client_id: 'client_7', service_name: 'Facial', start: getAppointmentOn(12, 9, 30), end: getAppointmentOn(12, 10, 30), status: 'Approved', }, // Overlap
   
-  // Samantha Burke
-  { id: 'appt_3', staff_id: 'prof_2', client_id: 'client_3', service_name: 'Traditional Balinese Massage', start: getAppointmentOn(10, 0), end: getAppointmentOn(11, 0), status: 'Completed', },
-  { id: 'appt_4', staff_id: 'prof_2', client_id: 'client_11', service_name: 'Eyebrow Waxing', start: getAppointmentOn(12, 0), end: getAppointmentOn(13, 0), status: 'Approved', },
-  { id: 'appt_5', staff_id: 'prof_2', client_id: 'client_3', service_name: 'Traditional Balinese Massage', start: getAppointmentOn(14, 0), end: getAppointmentOn(15, 0), status: 'Requested', },
+  // Monday, Nov 10
+  { id: 'appt_18', staff_id: 'prof_1', client_id: 'client_1', service_name: 'Hair Styling', start: getAppointmentOn(10, 9, 0), end: getAppointmentOn(10, 10, 0), status: 'Completed', },
+  { id: 'appt_19', staff_id: 'prof_3', client_id: 'client_2', service_name: 'Manicure', start: getAppointmentOn(10, 11, 0), end: getAppointmentOn(10, 12, 0), status: 'Approved', },
   
-  // Harold Long (with overlaps)
-  { id: 'appt_6', staff_id: 'prof_3', client_id: 'client_6', service_name: 'Refining Facial', start: getAppointmentOn(10, 0), end: getAppointmentOn(10, 30), status: 'Approved', },
-  { id: 'appt_7', staff_id: 'prof_3', client_id: 'client_7', service_name: 'Manicure', start: getAppointmentOn(10, 30), end: getAppointmentOn(11, 0), status: 'Approved', },
-  { id: 'appt_8', staff_id: 'prof_3', client_id: 'client_9', service_name: 'Refining Facial', start: getAppointmentOn(12, 0), end: getAppointmentOn(13, 0), status: 'Approved', },
-  { id: 'appt_9', staff_id: 'prof_3', client_id: 'client_8', service_name: 'Pedicure', start: getAppointmentOn(11, 30), end: getAppointmentOn(12, 30), status: 'Approved', }, // Overlap
+  // Tuesday, Nov 11
+  { id: 'appt_20', staff_id: 'prof_2', client_id: 'client_4', service_name: 'Deep Tissue Massage', start: getAppointmentOn(11, 14, 0), end: getAppointmentOn(11, 15, 30), status: 'Approved', },
   
-  // Isaiah Lopez
-  { id: 'appt_10', staff_id: 'prof_4', client_id: 'client_5', service_name: 'Hair Cut', start: getAppointmentOn(10, 0), end: getAppointmentOn(11, 0), status: 'Approved', },
-  { id: 'appt_11', staff_id: 'prof_4', client_id: 'client_4', service_name: 'Hot Stone Massage', start: getAppointmentOn(11, 30), end: getAppointmentOn(13, 30), status: 'Approved', },
+  // Thursday, Nov 13
+  { id: 'appt_21', staff_id: 'prof_5', client_id: 'client_8', service_name: 'Facial', start: getAppointmentOn(13, 10, 0), end: getAppointmentOn(13, 11, 0), status: 'Approved', },
+  { id: 'appt_22', staff_id: 'prof_6', client_id: 'client_9', service_name: 'Swedish Massage', start: getAppointmentOn(13, 10, 0), end: getAppointmentOn(13, 11, 0), status: 'Approved', },
   
-  // Sarah Stephens (with overlaps)
-  { id: 'appt_12', staff_id: 'prof_5', client_id: 'client_3', service_name: 'Traditional Balinese Massage', start: getAppointmentOn(9, 0), end: getAppointmentOn(10, 0), status: 'Approved', },
-  { id: 'appt_13', staff_id: 'prof_5', client_id: 'client_6', service_name: 'Eyebrow Waxing', start: getAppointmentOn(9, 0), end: getAppointmentOn(9, 30), status: 'Approved', }, // Overlap
-  { id: 'appt_14', staff_id: 'prof_5', client_id: 'client_7', service_name: 'Facial', start: getAppointmentOn(9, 30), end: getAppointmentOn(10, 30), status: 'Approved', }, // Overlap
-  { id: 'appt_15', staff_id: 'prof_5', client_id: 'client_8', service_name: 'Hair Colouring', start: getAppointmentOn(10, 30), end: getAppointmentOn(11, 0), status: 'Completed', },
-  { id: 'appt_16', staff_id: 'prof_5', client_id: 'client_10', service_name: 'Deep Tissue Massage', start: getAppointmentOn(11, 0), end: getAppointmentOn(12, 0), status: 'Approved', },
-  { id: 'appt_17', staff_id: 'prof_5', client_id: 'client_11', service_name: 'Eyebrow Waxing', start: getAppointmentOn(12, 0), end: getAppointmentOn(13, 0), status: 'Approved', },
+  // Friday, Nov 14
+  { id: 'appt_23', staff_id: 'prof_7', client_id: 'client_10', service_name: 'Pedicure', start: getAppointmentOn(14, 13, 0), end: getAppointmentOn(14, 14, 0), status: 'Completed', },
+  { id: 'appt_24', staff_id: 'prof_4', client_id: 'client_1', service_name: 'Hair Cut', start: getAppointmentOn(14, 15, 0), end: getAppointmentOn(14, 16, 0), status: 'Approved', },
 ];
 
 
